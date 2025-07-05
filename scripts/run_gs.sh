@@ -39,6 +39,7 @@ for data_path in $dir/*; do
 done
 wait
 
+mkdir outputs/$(basename $dir)_wandb_logs
 for data_path in $dir/*; do
 # for data_path in "${scenes[@]}"; do
     while true; do
@@ -48,6 +49,9 @@ for data_path in $dir/*; do
             WANDB_MODE=offline CUDA_VISIBLE_DEVICES=$gpu_id python main.py test \
                             --config outputs/$(basename $dir)/$(basename $data_path)/config.yaml \
                             --save_val &
+            mkdir outputs/$(basename $dir)_wandb_logs/$(basename $data_path)
+            cp -r outputs/$(basename $dir)/$(basename $data_path)/wandb \
+               outputs/$(basename $dir)_wandb_logs/$(basename $data_path)/
             # Allow some time for the process to initialize and potentially use GPU memory
             sleep 60
             break

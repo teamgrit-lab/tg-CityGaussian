@@ -39,17 +39,22 @@ for data_path in $dir/*; do
 done
 wait
 
-# for data_path in $dir/*; do
-for data_path in "${scenes[@]}"; do
+rm -rf outputs/$(basename $dir)_wandb_logs
+mkdir outputs/$(basename $dir)_wandb_logs
+for data_path in $dir/*; do
+# for data_path in "${scenes[@]}"; do
     while true; do
         gpu_id=$(get_available_gpu)
         if [[ -n $gpu_id ]]; then
             echo "GPU $gpu_id is available. Start evaluating GS on '$data_path'"
-            WANDB_MODE=offline CUDA_VISIBLE_DEVICES=$gpu_id python main.py test \
-                            --config outputs/$(basename $dir)/$(basename $data_path)/config.yaml \
-                            --save_val \
+            # WANDB_MODE=offline CUDA_VISIBLE_DEVICES=$gpu_id python main.py test \
+            #                 --config outputs/$(basename $dir)/$(basename $data_path)/config.yaml \
+            #                 --save_val &
+            mkdir outputs/$(basename $dir)_wandb_logs/$(basename $data_path)
+            cp -r outputs/$(basename $dir)/$(basename $data_path)/wandb \
+               outputs/$(basename $dir)_wandb_logs/$(basename $data_path)/
             # Allow some time for the process to initialize and potentially use GPU memory
-            sleep 60
+            # sleep 60
             break
         else
             echo "No GPU available at the moment. Retrying in 2 minute."
