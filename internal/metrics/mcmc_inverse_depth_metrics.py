@@ -70,7 +70,7 @@ class MCMCHasInverseDepthMetricsModule(MCMCMetricsImpl):
 
         if gt_inverse_depth is None:
             return torch.tensor(0., device=camera.device)
-
+        
         predicted_inverse_depth = outputs[self.config.depth_output_key].squeeze(0)
         if self.config.depth_normalized:
             with torch.no_grad():
@@ -80,9 +80,8 @@ class MCMCHasInverseDepthMetricsModule(MCMCMetricsImpl):
 
         if isinstance(gt_inverse_depth, tuple):
             gt_inverse_depth, gt_inverse_depth_mask = gt_inverse_depth
-
-            gt_inverse_depth = gt_inverse_depth * gt_inverse_depth_mask
-            predicted_inverse_depth = predicted_inverse_depth * gt_inverse_depth_mask
+        else:
+            gt_inverse_depth_mask = None
 
         # interpolate predicted_inverse_depth to be the size of gt_inverse_depth
         if predicted_inverse_depth.shape != gt_inverse_depth.shape:
@@ -92,7 +91,12 @@ class MCMCHasInverseDepthMetricsModule(MCMCMetricsImpl):
                 mode="bilinear",
                 align_corners=False,
             )[0, 0]
-
+        
+        if gt_inverse_depth_mask is not None:
+            # apply mask to gt_inverse_depth
+            gt_inverse_depth = gt_inverse_depth * gt_inverse_depth_mask
+            predicted_inverse_depth = predicted_inverse_depth * gt_inverse_depth_mask
+        
         return self._get_inverse_depth_loss(gt_inverse_depth, predicted_inverse_depth)
 
     def get_weight(self, step: int):

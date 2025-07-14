@@ -12,3 +12,4 @@ from .feature_3dgs_dataparser import Feature3DGSColmap
 from .colmap_pose_opt_dataparser import ColmapPoseOpt
 from .colmap_block_dataparser import ColmapBlock
 from .estimated_depth_colmap_block_dataparser import EstimatedDepthBlockColmap
+from .estimated_depth_conf_colmap_dataparser import EstimatedDepthConfColmap
