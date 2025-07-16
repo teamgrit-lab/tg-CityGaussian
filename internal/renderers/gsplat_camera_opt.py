@@ -5,6 +5,8 @@ import copy
 import torch
 import torch.nn.functional as F
 from torch import nn
+from kornia.geometry.conversions import axis_angle_to_rotation_matrix
+from kornia.geometry.conversions import rotation_matrix_to_axis_angle
 
 from ..cameras import Camera
 from ..utils.colmap import rotmat2qvec_torch, qvec2rotmat_torch
@@ -42,6 +44,7 @@ class ModelConfig:
     n_cameras: int = -1
     pose_opt_type: Literal["sfm", "mlp", "7dmlp"] = "sfm"
     cam_scale: float = 1.0
+    scale: float = 1e-3  # Used for 7dmlp
     mlp_width: int = 64
     mlp_depth: int = 2
 
@@ -167,7 +170,7 @@ class CameraOptModuleMLP(torch.nn.Module):
 class CameraOptModule7dMLP(torch.nn.Module):
     """Camera pose optimization module using MLP."""
 
-    def __init__(self, n: int, mlp_width: int = 64, mlp_depth: int = 4, cam_scale: float = 1.0):
+    def __init__(self, n: int, mlp_width: int = 256, mlp_depth: int = 2, scale: float = 1e-6):
         super().__init__()
         # Identity rotation in 6D representation
         self.register_buffer("identity", torch.tensor([1.0, 0.0, 0.0, 0.0, 1.0, 0.0]))
@@ -176,7 +179,7 @@ class CameraOptModule7dMLP(torch.nn.Module):
         self.num_cams = n
         
         # MLP layers
-        activation = torch.nn.ReLU(inplace=True)
+        activation = torch.nn.ELU(inplace=True)
         layers = []
         layers.append(torch.nn.Linear(7, mlp_width))
         layers.append(activation)
@@ -184,17 +187,18 @@ class CameraOptModule7dMLP(torch.nn.Module):
             layers.append(torch.nn.Linear(mlp_width, mlp_width))
             layers.append(activation)
         # Output layer produces 9D adjustments (3D position + 6D rotation)
-        layers.append(torch.nn.Linear(mlp_width, 7))
+        layers.append(torch.nn.Linear(mlp_width, 6))
         self.mlp = torch.nn.Sequential(*layers)
 
-        self.cam_scale = cam_scale
+        self.scale = scale
         
     def zero_init(self):
         # torch.nn.init.zeros_(self.embeds.weight)
         #torch.nn.init.normal_(self.embeds.weight)
         # Also initialize the last layer of MLP with small weights
-        torch.nn.init.zeros_(self.mlp[-1].weight)
-        torch.nn.init.zeros_(self.mlp[-1].bias)
+        # torch.nn.init.zeros_(self.mlp[-1].weight)
+        # torch.nn.init.zeros_(self.mlp[-1].bias)
+        pass
 
     def random_init(self, std: float):
         # torch.nn.init.normal_(self.embeds.weight, std=std)
@@ -215,24 +219,25 @@ class CameraOptModule7dMLP(torch.nn.Module):
         assert camtoworlds.shape[:-2] == embed_ids.shape
         if camtoworlds.ndim == 2:
             camtoworlds = camtoworlds.unsqueeze(0)
+        if embed_ids.ndim == 0:
+            embed_ids = embed_ids.unsqueeze(0)
         batch_shape = camtoworlds.shape[:-2]
         
         # Get embeddings and process through MLP with noise
-        quaternions = rotmat2qvec_torch(camtoworlds[..., :3, :3])  # (..., 4)
-        translations = camtoworlds[..., :3, 3] / self.cam_scale  # (..., 3)
-        if translations.ndim == 1:
-            translations = translations  # shape: (1, 3, 3)
-        mlp_input = torch.cat((quaternions, translations), dim=-1)  # (..., 7)
+        r_init = rotation_matrix_to_axis_angle(camtoworlds[..., :3, :3])
+        t_init = camtoworlds[..., :3, 3]
 
-        pose_deltas = self.mlp(mlp_input)  # (..., 7)
+        mlp_input = torch.cat((embed_ids[..., None], r_init, t_init), dim=-1)  # (..., 7)
+
+        out = self.mlp(mlp_input) * self.scale
         
-        pose_corrected = mlp_input + pose_deltas  # (..., 7)
-        rot = qvec2rotmat_torch(pose_corrected[..., :4])
-        dx = pose_corrected[..., 4:]
+        r = out[..., :3] + r_init
+        t = out[..., 3:] + t_init
+        R = axis_angle_to_rotation_matrix(r)
         
         camtoworlds_corrected = torch.eye(4, device=camtoworlds.device).repeat((*batch_shape, 1, 1))
-        camtoworlds_corrected[..., :3, :3] = rot
-        camtoworlds_corrected[..., :3, 3] = dx * self.cam_scale
+        camtoworlds_corrected[..., :3, :3] = R
+        camtoworlds_corrected[..., :3, 3] = t
             
         return camtoworlds_corrected.squeeze()
 
@@ -281,7 +286,7 @@ class GSplatCameraOptRendererModule(GSplatV1RendererModule):
                 n=self.config.model.n_cameras,
                 mlp_width=self.config.model.mlp_width,
                 mlp_depth=self.config.model.mlp_depth,
-                cam_scale=self.config.model.cam_scale
+                scale=self.config.model.scale
             )
         else:
             self.model = CameraOptModule(self.config.model.n_cameras)
