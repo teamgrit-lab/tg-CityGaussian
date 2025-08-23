@@ -8,10 +8,11 @@ Most codes are copied from https://github.com/ubc-vision/3dgs-mcmc
 from typing import Tuple, Dict, Any
 import torch
 
+from dataclasses import dataclass
 from .metric import MetricImpl
 from .vanilla_metrics import VanillaMetrics, VanillaMetricsImpl
 
-
+@dataclass
 class MCMCMetrics(VanillaMetrics):
     opacity_reg: float = 0.01
 
