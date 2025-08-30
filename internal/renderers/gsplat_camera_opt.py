@@ -55,9 +55,10 @@ class OptimizationConfig:
     embeds_lr : float = 1e-5
     embeds_lr_final_factor: float = 1.0  # No decay by default
     embeds_weight_decay: float = 0.0
+    shceduler_type: Literal["step", "cosine", "none"] = "none"
     eps: float = 1e-15
     max_steps: int = 30_000
-
+    opt_test: bool = False  # TODO: remove it
 
 class CameraOptModule(nn.Module):
     """Camera pose optimization module."""
@@ -97,7 +98,6 @@ class CameraOptModule(nn.Module):
         transform[..., :3, 3] = dx
         return torch.matmul(camtoworlds, transform)
     
-
 class CameraOptModuleMLP(torch.nn.Module):
     """Camera pose optimization module using MLP."""
 
@@ -308,6 +308,8 @@ class GSplatCameraOptRendererModule(GSplatV1RendererModule):
             lr_init=self.config.optimization.embeds_lr,
             weight_decay=self.config.optimization.embeds_weight_decay,
             lr_final_factor=self.config.optimization.embeds_lr_final_factor,
+            shceduler_type=self.config.optimization.shceduler_type,
+            step_size=len(module.trainer.datamodule.dataparser_outputs.train_set) * 20,
             max_steps=self.config.optimization.max_steps,
             eps=self.config.optimization.eps,
         )
@@ -340,6 +342,8 @@ class GSplatCameraOptRendererModule(GSplatV1RendererModule):
             lr_init,
             lr_final_factor,
             weight_decay,
+            shceduler_type,
+            step_size,
             max_steps,
             eps,
     ) -> Tuple[torch.optim.Optimizer, torch.optim.lr_scheduler.LRScheduler]:
@@ -351,10 +355,27 @@ class GSplatCameraOptRendererModule(GSplatV1RendererModule):
             weight_decay=weight_decay,
             eps=eps,
         )
-        scheduler = torch.optim.lr_scheduler.ExponentialLR(
-            optimizer=optimizer,
-            gamma=lr_final_factor ** (1 / max_steps),
-        )
+        if shceduler_type == "step":
+            scheduler = torch.optim.lr_scheduler.StepLR(
+                optimizer=optimizer,
+                step_size=step_size,
+                gamma=0.9
+            )
+        elif shceduler_type == "cosine":
+            milestone_step = 5000 if max_steps > 5000 else max_steps // 2
+            scheduler1 = torch.optim.lr_scheduler.ConstantLR(optimizer=optimizer, factor=1.0, total_iters=milestone_step)
+            scheduler2 = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer=optimizer, T_max=max_steps)
+            scheduler = torch.optim.lr_scheduler.SequentialLR(
+                optimizer=optimizer,
+                schedulers=[scheduler1, scheduler2],
+                milestones=[milestone_step],
+            )
+            
+        else:
+            scheduler = torch.optim.lr_scheduler.ExponentialLR(
+                optimizer=optimizer,
+                gamma=lr_final_factor ** (1 / max_steps),
+            )
 
         return optimizer, scheduler
 
