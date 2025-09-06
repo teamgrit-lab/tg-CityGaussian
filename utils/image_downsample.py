@@ -39,7 +39,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("src")
     parser.add_argument("--dst", default=None)
-    parser.add_argument("--factor", type=float, default=2)
+    parser.add_argument("--factor", type=int, default=2)
     parser.add_argument("--extensions", nargs="+", default=[
         "jpg",
         "JPG",
