@@ -3,13 +3,13 @@ import pandas as pd
 import numpy as np
 import argparse
 
-def gather_results(output_dir, format_float=False):
+def gather_results(output_dir, format_float=False, result_filename='results.txt'):
     data = []
 
     # Walk through subdirectories
     for subdir, _, files in os.walk(output_dir):
-        if 'results.txt' in files:
-            result_path = os.path.join(subdir, 'results.txt')
+        if result_filename in files:
+            result_path = os.path.join(subdir, result_filename)
             with open(result_path, 'r') as f:
                 contents = f.read()
                 # Split on commas and parse key-value pairs
@@ -24,6 +24,8 @@ def gather_results(output_dir, format_float=False):
                             metrics[key.strip()] = value.strip()
                 metrics['folder'] = os.path.basename(subdir)
                 data.append(metrics)
+        else:
+            print(f"Warning: {result_filename} not found in {subdir}")
 
     # Convert to DataFrame
     df = pd.DataFrame(data)
@@ -59,7 +61,8 @@ def gather_results(output_dir, format_float=False):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Aggregate results from results.txt files.')
     parser.add_argument('output_dir', type=str, help='Directory containing subfolders with results.txt files')
+    parser.add_argument('--result_filename', type=str, default='results.txt', help='Name of the results file to look for in subfolders')
     parser.add_argument('--format_float', action='store_true', help='Format floating numbers to 4 significant digits')
     args = parser.parse_args()
 
-    gather_results(args.output_dir, format_float=args.format_float)
+    gather_results(args.output_dir, format_float=args.format_float, result_filename=args.result_filename)
