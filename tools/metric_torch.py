@@ -157,8 +157,8 @@ def evaluate_auc(pred_se3, gt_se3, device, return_aligned=False):
     print(f"    --  AUC at 30: {Auc_30:.4f}")
 
     results = {
-        'rel_rangle_deg': rel_rangle_deg.mean(),
-        'rel_tangle_deg': rel_tangle_deg.mean(),
+        'rel_rangle_deg': rel_rangle_deg.mean().item(),
+        'rel_tangle_deg': rel_tangle_deg.mean().item(),
         'Racc_5': Racc_5,
         'Tacc_5': Tacc_5,
         'Racc_15': Racc_15,

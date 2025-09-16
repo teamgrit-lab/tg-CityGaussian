@@ -16,6 +16,7 @@ from .metric import MetricImpl
 from .mcmc_metrics import MCMCMetrics, MCMCMetricsImpl
 from ..renderers.gsplat_camera_opt import GSplatCameraOptRendererModule
 from ..configs.instantiate_config import InstantiatableConfig
+from internal.utils.gradient_loss import compute_gradient_loss
 
 @dataclass
 class PoseOptMCMCMetrics(MCMCMetrics):
@@ -25,6 +26,12 @@ class PoseOptMCMCMetrics(MCMCMetrics):
     epi_loss_max_iter: int = 30_000
 
     epi_loss_weight: float = 1e-3
+
+    magnitude_loss_alpha: float = 0.1
+
+    magnitude_loss_weight: float = 0.0
+
+    gradient_loss_only: bool = False
 
     def instantiate(self, *args, **kwargs) -> MetricImpl:
         return PoseOptMCMCMetricsImpl(self)
@@ -50,18 +57,18 @@ class PoseOptMCMCMetricsImpl(MCMCMetricsImpl):
         self.Ks_i = None
         self.Ks_j = None
 
-        if config.corr_path is not None:
-            print(f"Loading tracking data from {config.corr_path}")
-            correspondence = torch.load(config.corr_path)
-            self.corr_points_i_normalized = correspondence["corr_points_i"].clone().detach()
-            self.corr_points_j_normalized = correspondence["corr_points_j"].clone().detach()
-            self.corr_points_i_normalized[..., 0] /= correspondence["original_width"]
-            self.corr_points_i_normalized[..., 1] /= correspondence["original_height"]
-            self.corr_points_j_normalized[..., 0] /= correspondence["original_width"]
-            self.corr_points_j_normalized[..., 1] /= correspondence["original_height"]
-            self.corr_weights = correspondence["corr_weights"].clone().detach()
-            self.image_names_i = correspondence["image_names_i"]
-            self.image_names_j = correspondence["image_names_j"]
+        assert config.corr_path is not None, "Please provide a valid path to the correspondence file."
+        print(f"Loading tracking data from {config.corr_path}")
+        correspondence = torch.load(config.corr_path)
+        self.corr_points_i_normalized = correspondence["corr_points_i"].clone().detach()
+        self.corr_points_j_normalized = correspondence["corr_points_j"].clone().detach()
+        self.corr_points_i_normalized[..., 0] /= correspondence["original_width"]
+        self.corr_points_i_normalized[..., 1] /= correspondence["original_height"]
+        self.corr_points_j_normalized[..., 0] /= correspondence["original_width"]
+        self.corr_points_j_normalized[..., 1] /= correspondence["original_height"]
+        self.corr_weights = correspondence["corr_weights"].clone().detach()
+        self.image_names_i = correspondence["image_names_i"]
+        self.image_names_j = correspondence["image_names_j"]
     
     def initialize_corr(self, trainset, device):
 
@@ -103,7 +110,7 @@ class PoseOptMCMCMetricsImpl(MCMCMetricsImpl):
         self.initialized = True
         print(f"[INFO] Initialized {len(self.corr_points_i)} correspondences from {self.config.corr_path}.")
     
-    def epipolar_loss(self, pl_module, basic_metrics: Tuple[Dict[str, Any], Dict[str, bool]], step: int) -> Tuple[Dict[str, Any], Dict[str, bool]]:
+    def epipolar_loss(self, pl_module, basic_metrics, step, batch, outputs) -> Tuple[Dict[str, Any], Dict[str, bool]]:
         if not self.initialized and self.config.corr_path is not None:
             train_set = pl_module._trainer.datamodule.dataparser_outputs.train_set
             self.initialize_corr(train_set, device=basic_metrics[0]["loss"].device)
@@ -138,6 +145,14 @@ class PoseOptMCMCMetricsImpl(MCMCMetricsImpl):
 
             lepipolar = torch.tensor(0.0, device=basic_metrics[0]["loss"].device)
 
+        if pl_module.renderer.config.model.pose_opt_type == "sfm":
+            norm_embed = torch.norm(pl_module.renderer.model.embeds(batch[0].appearance_id), dim=-1)
+            target_mag = self.config.magnitude_loss_alpha * basic_metrics[0]["loss"]
+            l_magnitude = max(0, target_mag - norm_embed) * self.config.magnitude_loss_weight
+            basic_metrics[0]["loss"] = basic_metrics[0]["loss"] + l_magnitude
+            basic_metrics[0]["err_magnitude"] = l_magnitude
+            basic_metrics[1]["err_magnitude"] = True
+
         basic_metrics[0]["loss"] = basic_metrics[0]["loss"] + lepipolar * self.config.epi_loss_weight
         basic_metrics[0]["err_epipolar"] = lepipolar
         basic_metrics[1]["err_epipolar"] = True
@@ -145,5 +160,29 @@ class PoseOptMCMCMetricsImpl(MCMCMetricsImpl):
         return basic_metrics
 
     def get_train_metrics(self, pl_module, gaussian_model, step: int, batch, outputs) -> Tuple[Dict[str, Any], Dict[str, bool]]:
-        basic_metrics = super().get_train_metrics(pl_module, gaussian_model, step, batch, outputs)
-        return self.epipolar_loss(pl_module, basic_metrics, step)
+        
+        if not self.config.gradient_loss_only:
+            basic_metrics = super().get_train_metrics(pl_module, gaussian_model, step, batch, outputs)
+            return self.epipolar_loss(pl_module, basic_metrics, step, batch, outputs)
+        else:
+            camera, image_info, _ = batch
+            image_name, gt_image, masked_pixels = image_info
+            image = outputs["render"]
+
+            # calculate loss
+            if masked_pixels is not None:
+                gt_image = gt_image.clone()
+                gt_image[masked_pixels] = image.detach()[masked_pixels]  # copy masked pixels from prediction to G.T.
+            rgb_diff_loss = self.rgb_diff_loss_fn(outputs["render"], gt_image)
+            ssim_metric = self.ssim(outputs["render"], gt_image)
+            loss = compute_gradient_loss(gt_image.permute(1, 2, 0)[None], outputs["render"].permute(1, 2, 0)[None])
+
+            return {
+                "loss": loss,
+                "rgb_diff": rgb_diff_loss,
+                "ssim": ssim_metric,
+            }, {
+                "loss": True,
+                "rgb_diff": True,
+                "ssim": True,
+            }

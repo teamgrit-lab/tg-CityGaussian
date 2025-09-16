@@ -8,6 +8,7 @@ import torch
 import numpy as np
 
 import internal.utils.colmap as colmap_utils
+from internal.utils.normalize import normalize
 from internal.cameras.cameras import Cameras
 from internal.dataparsers.dataparser import DataParserConfig, DataParser, ImageSet, PointCloud, DataParserOutputs
 
@@ -49,6 +50,8 @@ class Colmap(DataParserConfig):
     scene_scale: float = 1.
 
     reorient: bool = False  # TODO
+
+    normalize: bool = False  # TODO
 
     appearance_groups: Optional[str] = None
 
@@ -393,7 +396,7 @@ class ColmapDataParser(DataParser):
 
             print("down sample enabled")
 
-        is_w2c_required = self.params.scene_scale != 1.0 or self.params.reorient is True
+        is_w2c_required = self.params.scene_scale != 1.0 or self.params.reorient is True or self.params.normalize is True
         if is_w2c_required:
             # build world-to-camera transform matrix
             w2c = torch.zeros(size=(R.shape[0], 4, 4))
@@ -435,6 +438,11 @@ class ColmapDataParser(DataParser):
 
                 # rescale scene extent
                 # norm["radius"] *= self.params.scene_scale
+
+            if self.params.normalize:
+                print("normalize scene")
+                c2w, xyz, _ = normalize(c2w.numpy(), xyz)
+                c2w = torch.tensor(c2w, dtype=torch.float32)
 
             # convert back to world-to-camera
             w2c = torch.linalg.inv(c2w)
