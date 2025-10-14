@@ -9,9 +9,15 @@
 <div id="top" align="center">
 
 [![](https://img.shields.io/badge/%F0%9F%9A%80%20Project-V1-green)](https://dekuliutesla.github.io/citygs/)
+[![HuggingFace](https://img.shields.io/badge/%F0%9F%A4%97-Hugging%20Face-green)](https://huggingface.co/TeslaYang123/CityGaussian)
 [![](https://img.shields.io/badge/%F0%9F%9A%80%20Project-V2-blue)](https://dekuliutesla.github.io/CityGaussianV2/)
-[![HuggingFace](https://img.shields.io/badge/%F0%9F%A4%97-Hugging%20Face-orange)](https://huggingface.co/TeslaYang123/CityGaussian)
-![GitHub Repo stars](https://img.shields.io/github/stars/DekuLiuTesla/CityGaussian)
+[![HuggingFace](https://img.shields.io/badge/%F0%9F%A4%97-Hugging%20Face-blue)](https://huggingface.co/TeslaYang123/CityGaussianV2)
+[![](https://img.shields.io/badge/📄-中文解读-red)](https://zhuanlan.zhihu.com/p/26862925999)
+[![Discord](https://img.shields.io/badge/Discord-7289DA.svg?logo=discord&logoColor=white)](https://discord.gg/SMkPUPuGww)
+![GitHub Repo stars](https://img.shields.io/github/stars/Linketic/CityGaussian)
+![GitHub forks](https://img.shields.io/github/forks/Linketic/CityGaussian)
+[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
 
 </div>
 <p align="center">
@@ -19,10 +25,10 @@
 </p>
 
 This repo contains official implementations of our series of work in large-scale scene reconstruction with Gaussian Splatting, Star ⭐ us if you like it!
-- [CityGaussianV2: Efficient and Geometrically Accurate Reconstruction for Large-Scale Scenes](https://arxiv.org/pdf/2411.00771)
+- [CityGaussianV2: Efficient and Geometrically Accurate Reconstruction for Large-Scale Scenes](https://arxiv.org/pdf/2411.00771) (ICLR 2025)
 - [CityGaussian: Real-time High-quality Large-Scale Scene Rendering with Gaussians](https://arxiv.org/pdf/2404.01133) (ECCV 2024)
 
-The links above points to the papers. The main branch now has been rebased to [Gaussian Lightning v0.10.1](https://github.com/yzslab/gaussian-splatting-lightning). Feel free to explore the repository!
+The links above point to the papers. The main branch now has been rebased to [Gaussian Lightning v0.10.1](https://github.com/yzslab/gaussian-splatting-lightning). If you need to visit the original V1 code, please turn to the `V1-Original` branch. Feel free to explore the repository!
 
 ## 👏 Features
 * CityGaussian-style multi-gpu reconstruction with controllable memory cost and no limit on GPU amount
@@ -32,7 +38,7 @@ The links above points to the papers. The main branch now has been rebased to [G
 * Features of [Gaussian Lightning](https://github.com/yzslab/gaussian-splatting-lightning), including web viewer, MipSplatting, AbsGS, StopThePop, etc.
 
 <details>
-<summary><span style="font-weight: bold;">Table Results</span></summary>
+<summary><span style="font-weight: bold;">Table Results & Checkpoints </span></summary>
 
 | Scene | SSIM↑ | PSNR↑ | LPIPS↓ | Precision↑ | Recall↑ | F1-Score↑ | #GS(M) |
 | :---: | :---: | :---: | :---: | :---:|:---:| :---: | :---: |
@@ -42,11 +48,22 @@ The links above points to the papers. The main branch now has been rebased to [G
 | MatrixCity Aerial | 0.859 | 27.26 | 0.175 | 0.432 | 0.790 | 0.559 | 8.57 |
 | MatrixCity Street | 0.791 | 22.32 | 0.344 | 0.325 | 0.797 | 0.461 | 7.40 |
 
-Note for street view, the F1-Score is lower than that reported in paper, since we sacrifice precision for a better recall and more complete road surface. If unbroken road is prefered, you can adjust `depth_ratio` to 0.0, but surface reconstruction performance will be worse.
+Note for street view, the F1-Score is lower than that reported in paper, since we sacrifice precision for a better recall and more complete road surface. If unbroken road is prefered, you can adjust `depth_ratio` to 0.0, but surface reconstruction performance will be worse. The checkpoints of CityGSV2 can be found here:
+
+- Baidu Netdisk: https://pan.baidu.com/s/1tRKiJzMLk2-zoyvoa9bkqA?pwd=1b4r
+- Hugging Face: https://huggingface.co/TeslaYang123/CityGaussianV2
 
 </details>
 
 ## 📰 News
+**[2025.04.04]** A [Discord](https://discord.gg/Hu7ezBp4) is now available. Come for a deeper and more instant communication about city reconstruction!
+
+**[2025.03.26]** The repo now belongs to the research organization [Linketic](https://github.com/Linketic).
+
+**[2025.01.31]** Checkpoints of CityGaussian V2 has been released!
+
+**[2025.01.22]** CityGaussian V2 has been accepted by ICLR 2025!
+
 **[2025.01.22]** Code of CityGaussian V2 is now released. Welcome to try it out!
 
 **[2024.11.04]** Announcement of our [CityGaussianV2](https://dekuliutesla.github.io/CityGaussianV2/)!
@@ -66,11 +83,14 @@ Note for street view, the F1-Score is lower than that reported in paper, since w
 
 - \[ \] Official Implementation of Appearance Embedding.
 - \[ \] Support of V1 style LoD.
-- \[ \] Release the checkpoint of CityGaussian V2.
+- \[x\] Release the checkpoint of CityGaussian V2.
 - \[x\] Release the V2 of CityGaussian.
 - \[x\] Release code and checkpoints of CityGaussian.
 - \[x\] Release ColMap results of main datasets.
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Linketic/CityGaussian&type=Date)](https://www.star-history.com/#Linketic/CityGaussian&Date)
 
 ## 📄 License
 
@@ -81,14 +101,13 @@ This work is under the <a rel="license" href="http://creativecommons.org/license
 ## 🤗 Citation
 If you find this repository useful, please use the following BibTeX entry for citation.
 ```latex
-@misc{liu2024citygaussianv2efficientgeometricallyaccurate,
-      title={CityGaussianV2: Efficient and Geometrically Accurate Reconstruction for Large-Scale Scenes}, 
-      author={Yang Liu and Chuanchen Luo and Zhongkai Mao and Junran Peng and Zhaoxiang Zhang},
-      year={2024},
-      eprint={2411.00771},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2411.00771}, 
+@inproceedings{
+    liu2024citygaussianv2,
+    title={CityGaussianV2: Efficient and Geometrically Accurate Reconstruction for Large-Scale Scenes},
+    author={Yang Liu and Chuanchen Luo and Zhongkai Mao and Junran Peng and Zhaoxiang Zhang},
+    booktitle={The Thirteenth International Conference on Learning Representations},
+    year={2025},
+    url={https://openreview.net/forum?id=a3ptUbuzbW}
 }
 ```
 
