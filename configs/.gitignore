@@ -61,6 +61,8 @@
 !citygsv2_mc_aerial.yaml
 !citygsv2_mc_aerial_coarse_sh2.yaml
 !citygsv2_mc_aerial_sh2_trim.yaml
+!colmap_pose_opt_mcmc.yaml
+!colmap_pose_opt_mcmc_test.yaml
 
 !segany_splatting.yaml
 !appearance_embedding_renderer

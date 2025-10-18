@@ -28,13 +28,14 @@ This repo contains official implementations of our series of work in large-scale
 - [CityGaussianV2: Efficient and Geometrically Accurate Reconstruction for Large-Scale Scenes](https://arxiv.org/pdf/2411.00771) (ICLR 2025)
 - [CityGaussian: Real-time High-quality Large-Scale Scene Rendering with Gaussians](https://arxiv.org/pdf/2404.01133) (ECCV 2024)
 
-The links above point to the papers. The main branch now has been rebased to [Gaussian Lightning v0.10.1](https://github.com/yzslab/gaussian-splatting-lightning). If you need to visit the original V1 code, please turn to the `V1-Original` branch. Feel free to explore the repository!
+The links above point to the papers. The main branch now has been rebased to [Gaussian Lightning v0.10.1](https://github.com/yzslab/gaussian-splatting-lightning). If you need to visit the original V1 code, please turn to the `V1-Original` branch. If you need support for [VGGT-X](https://github.com/Linketic/VGGT-X), please visit guidance [here](doc/vggt_x.md). Feel free to explore the repository!
 
 ## 👏 Features
 * CityGaussian-style multi-gpu reconstruction with controllable memory cost and no limit on GPU amount
 * Analysis of model partition and data assignment
 * 2DGS-style mesh extraction & Large-scale scene geometric performance evaluation
 * Trajectory aligned rendering & mesh video generation with floater removement
+* Joint pose and 3DGS optimization for imperfect COLMAP results like from 3D foundation models.
 * Features of [Gaussian Lightning](https://github.com/yzslab/gaussian-splatting-lightning), including web viewer, MipSplatting, AbsGS, StopThePop, etc.
 
 <details>
@@ -56,6 +57,8 @@ Note for street view, the F1-Score is lower than that reported in paper, since w
 </details>
 
 ## 📰 News
+**[2025.10.18]** Adds support and guidance for joint pose and 3DGS optimization of [VGGT-X](https://github.com/Linketic/VGGT-X)!
+
 **[2025.04.04]** A [Discord](https://discord.gg/Hu7ezBp4) is now available. Come for a deeper and more instant communication about city reconstruction!
 
 **[2025.03.26]** The repo now belongs to the research organization [Linketic](https://github.com/Linketic).
@@ -77,12 +80,14 @@ Note for street view, the F1-Score is lower than that reported in paper, since w
 - [Data Preparation](doc/data_preparation.md)
 - [Run and Eval](doc/run&eval.md)
 - [Video Rendering on GS and Mesh](doc/render_video.md)
+- [VGGT-X](doc/vggt_x.md)
 
 
 ## 📝 TODO List
 
 - \[ \] Official Implementation of Appearance Embedding.
 - \[ \] Support of V1 style LoD.
+- \[x\] Support of VGGT-X.
 - \[x\] Release the checkpoint of CityGaussian V2.
 - \[x\] Release the V2 of CityGaussian.
 - \[x\] Release code and checkpoints of CityGaussian.

@@ -39,7 +39,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("src")
     parser.add_argument("--dst", default=None)
-    parser.add_argument("--factor", type=int, default=2)
+    parser.add_argument("--factor", type=float, default=2)
     parser.add_argument("--extensions", nargs="+", default=[
         "jpg",
         "JPG",
@@ -53,7 +53,8 @@ if __name__ == "__main__":
     assert args.src != args.dst
 
     if args.dst is None:
-        args.dst = "{}_{}".format(args.src, args.factor)
+        factor_str = str(int(args.factor)) if args.factor == int(args.factor) else str(args.factor)
+        args.dst = f"{args.src}_{factor_str}"
 
     image_list = find_images(args.src, args.extensions)
 

@@ -6,31 +6,36 @@ get_available_gpu() {
 }
 
 PROJECT=VGGT
-dir="data/CO3D_vggt_opt"
-post_fix="_vggt_opt_mcmc_x_gamma_epi"
-config_path="configs/colmap_pose_opt_track_w3_exp_ds1_mcmc.yaml"
-test_config="configs/colmap_pose_opt_track_w3_exp_ds1_mcmc_test.yaml"
+dir="data/TNT_GOF/TrainingSet_vggt_x"
+ds_rounding_mode="round"
+ds_factor=2
+post_fix="_pose_opt_mcmc"
+config_path="configs/colmap_pose_opt_mcmc.yaml"
+test_config="configs/colmap_pose_opt_mcmc_test.yaml"
 
 declare -a scenes=(
-    "$dir/apple"
-    "$dir/bench"
-    "$dir/hydrant"
-    "$dir/skateboard"
-    "$dir/teddybear"
+    "$dir/Barn"
+    "$dir/Caterpillar"
+    "$dir/Ignatius"
+    "$dir/Meetingroom"
+    "$dir/Truck"
+    "$dir/Courthouse"
 )
 
 declare -a cap_maxs=(
-    319_666
-    1_082_101
-    2_339_815
-    304_921
-    326_713
+    882_712
+    1_267_267
+    3_404_402
+    1_161_601
+    3_019_416
+    551_910
 )
 
 # for data_path in $dir/*; do
 #     python utils/image_downsample.py $data_path/images --factor 2 &
 # done
 
+# Training
 for i in "${!scenes[@]}"; do
     data_path=${scenes[$i]}
     cap_max=${cap_maxs[$i]}
@@ -38,15 +43,16 @@ for i in "${!scenes[@]}"; do
         gpu_id=$(get_available_gpu)
         if [[ -n $gpu_id ]]; then
             echo "GPU $gpu_id is available. Start running GS on '$data_path'"
-            WANDB_MODE=offline CUDA_VISIBLE_DEVICES=$gpu_id python main.py fit \
-            --config $config_path \
-            --data.path $data_path \
-            --model.density.init_args.cap_max $cap_max \
-            -n $(basename $data_path)$post_fix \
-            --output outputs/$(basename $dir)$post_fix \
-            --logger wandb \
-            --project $PROJECT \
-            --data.train_max_num_images_to_cache 1024 &
+            CUDA_VISIBLE_DEVICES=$gpu_id python main.py fit \
+                    --config $config_path \
+                    --data.path $data_path \
+                    --model.density.init_args.cap_max $cap_max \
+                    --data.parser.init_args.down_sample_factor $ds_factor \
+                    --data.parser.init_args.down_sample_rounding_mode $ds_rounding_mode \
+                    -n $(basename $data_path)$post_fix \
+                    --output outputs/$(basename $dir)$post_fix \
+                    --logger wandb \
+                    --project $PROJECT &
             # Allow some time for the process to initialize and potentially use GPU memory
             sleep 60
             break
@@ -58,33 +64,7 @@ for i in "${!scenes[@]}"; do
 done
 wait
 
-python tools/gather_wandb.py --output_path outputs/$(basename $dir)$post_fix
-
-rm -rf outputs/$(basename $dir)${post_fix}/*/test
-for data_path in $dir/*; do
-# for data_path in "${scenes[@]}"; do
-    while [ -d "$data_path" ]; do
-        gpu_id=$(get_available_gpu)
-        if [[ -n $gpu_id ]]; then
-            echo "GPU $gpu_id is available. Start evaluating GS on '$data_path'"
-            WANDB_MODE=offline CUDA_VISIBLE_DEVICES=$gpu_id python main.py test \
-                            --config outputs/$(basename $dir)$post_fix/$(basename $data_path)$post_fix/config.yaml \
-                            --save_val --val_train &
-                            # --data.parser.init_args.ref_path $data_path \
-                            # --model.metric internal.metrics.PoseOptMetrics \
-            # Allow some time for the process to initialize and potentially use GPU memory
-            sleep 30
-            break
-        else
-            echo "No GPU available at the moment. Retrying in 2 minute."
-            sleep 30
-        fi
-    done
-done
-wait
-
-python tools/gather_results.py outputs/$(basename $dir)$post_fix --format_float
-
+# Test view alignment, it can be regarded as another independant training stage
 for i in "${!scenes[@]}"; do
     data_path=${scenes[$i]}
     cap_max=${cap_maxs[$i]}
@@ -92,16 +72,17 @@ for i in "${!scenes[@]}"; do
         gpu_id=$(get_available_gpu)
         if [[ -n $gpu_id ]]; then
             echo "GPU $gpu_id is available. Start running GS on '$data_path'"
-            WANDB_MODE=offline CUDA_VISIBLE_DEVICES=$gpu_id python main.py fit \
+            CUDA_VISIBLE_DEVICES=$gpu_id python main.py fit \
                             --config $test_config \
                             --data.path $data_path \
                             --model.density.init_args.cap_max $cap_max \
+                            --data.parser.init_args.down_sample_factor $ds_factor \
+                            --data.parser.init_args.down_sample_rounding_mode $ds_rounding_mode \
                             --model.initialize_from outputs/$(basename $dir)${post_fix}/$(basename $data_path)$post_fix \
                             -n $(basename $data_path)${post_fix} \
                             --output outputs/$(basename $dir)${post_fix}_test \
                             --logger wandb \
-                            --project $PROJECT \
-                            --data.train_max_num_images_to_cache 1024 &
+                            --project $PROJECT &
             # Allow some time for the process to initialize and potentially use GPU memory
             sleep 60
             break
@@ -114,17 +95,14 @@ done
 wait
 
 rm -rf outputs/$(basename $dir)${post_fix}_test/*/test
-# for data_path in $dir/*; do
 for data_path in "${scenes[@]}"; do
     while [ -d "$data_path" ]; do
         gpu_id=$(get_available_gpu)
         if [[ -n $gpu_id ]]; then
             echo "GPU $gpu_id is available. Start evaluating GS on '$data_path'"
-            WANDB_MODE=offline CUDA_VISIBLE_DEVICES=$gpu_id python main.py test \
+            CUDA_VISIBLE_DEVICES=$gpu_id python main.py test \
                             --config outputs/$(basename $dir)${post_fix}_test/$(basename $data_path)$post_fix/config.yaml \
                             --save_val --val_train &
-                            # --val_train
-                            # --model.metric internal.metrics.PoseOptMetrics \
             # Allow some time for the process to initialize and potentially use GPU memory
             sleep 30
             break
@@ -137,4 +115,3 @@ done
 wait
 
 python tools/gather_results.py outputs/$(basename $dir)${post_fix}_test --format_float
-# python tools/wandb_sync.py --output_path outputs/$(basename $dir)_$post_fix
