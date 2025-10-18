@@ -29,6 +29,7 @@ conda activate gspl
 ```bash
 pip install -r requirements.txt
 ```
+For pose and 3DGS joint optimization, please directly jump to this [document](../doc/vggt_x.md).
 
 ### E. Install additional package for CityGaussian
 

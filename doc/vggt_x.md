@@ -1,6 +1,6 @@
 ## Prepare Environment and Data
 
-First, please follow steps A-D of [Installation](doc/installation.md) document to install basic environment. Then, apply
+First, please follow steps A-D of [Installation](../doc/installation.md) document to install basic environment. Then, apply
 
 ```bash
 pip install -r requirements/gsplat.txt
