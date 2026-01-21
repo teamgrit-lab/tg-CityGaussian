@@ -52,6 +52,15 @@ bash scripts/launch_citygs.sh
 bash scripts/run_citygs_job.sh "python main.py fit --config configs/your_config.yaml -n your_run"
 ```
 
+위 스크립트는 실행 전에 S3에서 데이터를 받고, 실행 후 결과를 업로드합니다.
+필요한 값은 `docker.env`에 설정하세요:
+
+```
+S3_BUCKET=your-bucket
+S3_DATA_PREFIX=datasets
+S3_OUTPUT_PREFIX=outputs
+```
+
 ### 4-1) COLMAP 전용 컨테이너 실행
 
 COLMAP은 별도 인스턴스에서 CLI만 사용할 예정이라면 아래 서비스를 사용하세요.
@@ -76,6 +85,13 @@ COLMAP 명령을 바로 백그라운드로 돌리기:
 
 ```bash
 bash scripts/run_colmap_job.sh "colmap help"
+```
+
+S3 동기화만 단독으로 실행하려면 컨테이너에서 아래 스크립트를 사용하세요:
+
+```bash
+bash scripts/s3_pull.sh
+bash scripts/s3_push.sh
 ```
 
 예시:
