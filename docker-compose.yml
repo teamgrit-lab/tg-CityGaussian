@@ -70,4 +70,8 @@ services:
     environment:
       AWS_REGION: ap-northeast-2
     stdin_open: true
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
     tty: true
