@@ -1,0 +1,56 @@
+version: "3.9"
+
+services:
+  citygs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: citygaussian:cuda118
+    shm_size: "16gb"
+    volumes:
+      - ./data:/workspace/data
+      - ./outputs:/workspace/outputs
+      - ./cache:/workspace/.cache
+    env_file:
+      - docker.env
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+      AWS_REGION: ap-northeast-2
+      MLFLOW_TRACKING_URI: ""
+      MLFLOW_EXPERIMENT_NAME: ""
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    stdin_open: true
+    tty: true
+
+  colmap:
+    build:
+      context: .
+      dockerfile: docker/colmap/Dockerfile
+    image: citygaussian:colmap-cuda118
+    shm_size: "8gb"
+    volumes:
+      - ./data:/workspace/data
+      - ./outputs:/workspace/outputs
+      - ./cache:/workspace/.cache
+    env_file:
+      - docker.env
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+      AWS_REGION: ap-northeast-2
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    stdin_open: true
+    tty: true

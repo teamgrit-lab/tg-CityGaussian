@@ -77,6 +77,7 @@ Note for street view, the F1-Score is lower than that reported in paper, since w
 
 ## 🛠 Getting Started
 - [Installation](doc/installation.md)
+- [Docker (AWS g6e.12xlarge)](doc/docker.md)
 - [Data Preparation](doc/data_preparation.md)
 - [Run and Eval](doc/run&eval.md)
 - [Video Rendering on GS and Mesh](doc/render_video.md)
