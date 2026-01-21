@@ -54,3 +54,20 @@ services:
               capabilities: [gpu]
     stdin_open: true
     tty: true
+
+  colmap_cpu:
+    build:
+      context: .
+      dockerfile: docker/colmap/Dockerfile
+    image: citygaussian:colmap-cpu
+    shm_size: "8gb"
+    volumes:
+      - ./data:/workspace/data
+      - ./outputs:/workspace/outputs
+      - ./cache:/workspace/.cache
+    env_file:
+      - docker.env
+    environment:
+      AWS_REGION: ap-northeast-2
+    stdin_open: true
+    tty: true

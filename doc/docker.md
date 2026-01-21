@@ -63,10 +63,10 @@ S3_OUTPUT_PREFIX=outputs
 
 ### 4-1) COLMAP 전용 컨테이너 실행
 
-COLMAP은 별도 인스턴스에서 CLI만 사용할 예정이라면 아래 서비스를 사용하세요.
+GPU 없이 CPU만 사용할 경우 `colmap_cpu` 서비스를 사용하세요.
 
 ```bash
-docker compose run --rm colmap bash
+docker compose run --rm colmap_cpu bash
 ```
 
 빠른 실행 스크립트:

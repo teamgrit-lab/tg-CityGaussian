@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-docker compose run --rm colmap bash
+docker compose run --rm colmap_cpu bash

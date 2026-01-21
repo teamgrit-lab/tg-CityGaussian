@@ -13,7 +13,7 @@ ts="$(date +%Y%m%d_%H%M%S)"
 log_path="${LOG_DIR}/colmap_${ts}.log"
 cmd="$*"
 
-nohup docker compose run --rm colmap bash -lc "$cmd" >"$log_path" 2>&1 &
+nohup docker compose run --rm colmap_cpu bash -lc "$cmd" >"$log_path" 2>&1 &
 
 echo "백그라운드 실행 PID: $!"
 echo "로그 파일: ${log_path}"
