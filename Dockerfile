@@ -3,8 +3,8 @@ FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.9 \
-    python3.9-dev \
+    python3.10 \
+    python3.10-dev \
     python3-pip \
     python3-venv \
     git \
@@ -21,7 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxrender1 \
   && rm -rf /var/lib/apt/lists/*
 
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1 \
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1 \
   && python -m pip install --upgrade pip setuptools wheel
 
 WORKDIR /workspace
