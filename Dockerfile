@@ -24,6 +24,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1 \
   && python -m pip install --upgrade pip setuptools wheel
 
+ENV TORCH_CUDA_ARCH_LIST=8.9
+
 WORKDIR /workspace
 
 COPY requirements/ requirements/
