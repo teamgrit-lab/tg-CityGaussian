@@ -16,11 +16,14 @@ fi
 
 run_in_container() {
   set +e
-  ${COMPOSE} exec -T "${SERVICE}" bash -lc "$*"
+  output="$(${COMPOSE} exec -T "${SERVICE}" bash -lc "$*" 2>&1)"
   status=$?
   set -e
   if [ ${status} -ne 0 ]; then
     echo "ERROR: 컨테이너 실행 명령이 실패했습니다 (exit ${status})." >&2
+    echo "---- docker-compose exec 출력 ----" >&2
+    echo "${output}" >&2
+    echo "---- 끝 ----" >&2
     echo "docker-compose ps 로 상태를 확인해 주세요." >&2
     exit ${status}
   fi
