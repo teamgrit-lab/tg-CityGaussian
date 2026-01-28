@@ -1,0 +1,25 @@
+model:
+  gaussian: internal.models.gaussian_2d.Gaussian2D
+  renderer: internal.renderers.vanilla_2dgs_renderer.Vanilla2DGSRenderer
+  metric: internal.metrics.gs2d_metrics.GS2DMetrics
+  density:
+    class_path: internal.density_controllers.gs2d_density_controller.GS2DDensityController
+    init_args:
+      cull_opacity_threshold: 0.05
+
+data:
+  path: data/com3_full
+  parser: Colmap
+  val_max_num_images_to_cache: -1 # 모든 validation 이미지 메모리 캐싱
+  test_max_num_images_to_cache: -1
+  train_max_num_images_to_cache: -1 # 모든 training 이미지 메모리 캐싱 (고성능 AWS)
+  num_workers: 8 # 데이터 로딩 병렬화
+  image_on_cpu: false # 이미지를 GPU에 직접 로드
+  camera_on_cpu: false # 카메라 파라미터도 GPU에
+
+trainer:
+  max_steps: 50000 # 더 길게 학습
+  precision: 32 # 최대 정밀도
+  log_every_n_steps: 100
+  val_check_interval: 1000 # 더 자주 validation
+
