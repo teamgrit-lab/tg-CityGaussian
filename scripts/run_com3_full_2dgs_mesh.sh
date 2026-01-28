@@ -29,23 +29,6 @@ run_in_container() {
   fi
 }
 
-echo "[0/4] 데이터 심볼릭 링크 정리"
-run_in_container '
-  set -e
-  DATA_ROOT="/workspace/data/com3_full"
-  SPARSE_SRC="${DATA_ROOT}/sfm/sparse/0"
-  SPARSE_DST="${DATA_ROOT}/sparse"
-  if [ -d "${SPARSE_SRC}" ] && [ ! -e "${SPARSE_DST}" ]; then
-    ln -s "${SPARSE_SRC}" "${SPARSE_DST}"
-  fi
-
-  PINHOLE_IMAGES="${DATA_ROOT}/pinhole_images/images"
-  IMAGES_DST="${DATA_ROOT}/images"
-  if [ -d "${PINHOLE_IMAGES}" ] && [ ! -e "${IMAGES_DST}" ]; then
-    ln -s "${PINHOLE_IMAGES}" "${IMAGES_DST}"
-  fi
-'
-
 echo "[1/4] coarse 학습 시작"
 run_in_container "python main.py fit --config ${CONFIG_PATH} -n ${PROJECT_NAME}"
 
