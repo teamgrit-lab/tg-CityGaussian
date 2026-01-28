@@ -5,7 +5,7 @@ PROJECT_NAME="com3_full_2dgs"
 CONFIG_PATH="configs/com3_full_2dgs.yaml"
 OUTPUT_DIR="outputs/${PROJECT_NAME}"
 
-COMPOSE="docker compose"
+COMPOSE="docker-compose"
 SERVICE="citygs"
 
 if ! ${COMPOSE} ps --status running --services | grep -q "^${SERVICE}$"; then
