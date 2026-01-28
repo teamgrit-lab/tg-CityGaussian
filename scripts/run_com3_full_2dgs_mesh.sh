@@ -39,15 +39,10 @@ run_in_container '
     ln -s "${SPARSE_SRC}" "${SPARSE_DST}"
   fi
 
-  PINHOLE_DIR="${DATA_ROOT}/pinhole_images"
-  IMAGE_IN_PINHOLE="${PINHOLE_DIR}/Image"
+  PINHOLE_IMAGES="${DATA_ROOT}/pinhole_images/images"
   IMAGES_DST="${DATA_ROOT}/images"
-  IMAGE_DST="${DATA_ROOT}/Image"
-  if [ -d "${IMAGE_IN_PINHOLE}" ]; then
-    [ ! -e "${IMAGES_DST}" ] && ln -s "${IMAGE_IN_PINHOLE}" "${IMAGES_DST}"
-    [ ! -e "${IMAGE_DST}" ] && ln -s "${IMAGE_IN_PINHOLE}" "${IMAGE_DST}"
-  elif [ -d "${PINHOLE_DIR}" ]; then
-    [ ! -e "${IMAGES_DST}" ] && ln -s "${PINHOLE_DIR}" "${IMAGES_DST}"
+  if [ -d "${PINHOLE_IMAGES}" ] && [ ! -e "${IMAGES_DST}" ]; then
+    ln -s "${PINHOLE_IMAGES}" "${IMAGES_DST}"
   fi
 '
 
