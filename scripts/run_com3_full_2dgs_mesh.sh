@@ -15,7 +15,15 @@ if ! ${COMPOSE} ps --status running --services | grep -q "^${SERVICE}$"; then
 fi
 
 run_in_container() {
+  set +e
   ${COMPOSE} exec -T "${SERVICE}" bash -lc "$*"
+  status=$?
+  set -e
+  if [ ${status} -ne 0 ]; then
+    echo "ERROR: 컨테이너 실행 명령이 실패했습니다 (exit ${status})." >&2
+    echo "docker-compose ps 로 상태를 확인해 주세요." >&2
+    exit ${status}
+  fi
 }
 
 echo "[0/4] 데이터 심볼릭 링크 정리"
