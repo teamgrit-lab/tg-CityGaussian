@@ -18,6 +18,28 @@ run_in_container() {
   ${COMPOSE} exec -T "${SERVICE}" bash -lc "$*"
 }
 
+echo "[0/4] 데이터 심볼릭 링크 정리"
+run_in_container '
+  set -e
+  DATA_ROOT="/workspace/data/com3_full"
+  SPARSE_SRC="${DATA_ROOT}/sfm/sparse/0"
+  SPARSE_DST="${DATA_ROOT}/sparse"
+  if [ -d "${SPARSE_SRC}" ] && [ ! -e "${SPARSE_DST}" ]; then
+    ln -s "${SPARSE_SRC}" "${SPARSE_DST}"
+  fi
+
+  PINHOLE_DIR="${DATA_ROOT}/pinhole_images"
+  IMAGE_IN_PINHOLE="${PINHOLE_DIR}/Image"
+  IMAGES_DST="${DATA_ROOT}/images"
+  IMAGE_DST="${DATA_ROOT}/Image"
+  if [ -d "${IMAGE_IN_PINHOLE}" ]; then
+    [ ! -e "${IMAGES_DST}" ] && ln -s "${IMAGE_IN_PINHOLE}" "${IMAGES_DST}"
+    [ ! -e "${IMAGE_DST}" ] && ln -s "${IMAGE_IN_PINHOLE}" "${IMAGE_DST}"
+  elif [ -d "${PINHOLE_DIR}" ]; then
+    [ ! -e "${IMAGES_DST}" ] && ln -s "${PINHOLE_DIR}" "${IMAGES_DST}"
+  fi
+'
+
 echo "[1/4] coarse 학습 시작"
 run_in_container "python main.py fit --config ${CONFIG_PATH} -n ${PROJECT_NAME}"
 
