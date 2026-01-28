@@ -30,8 +30,8 @@ COPY requirements/ requirements/
 COPY requirements.txt requirements.txt
 
 RUN pip install -r requirements/pyt201_cu118.txt \
-  && pip install -r requirements.txt \
-  && pip install -r requirements/CityGS.txt \
+  && PIP_NO_BUILD_ISOLATION=1 pip install -r requirements.txt \
+  && PIP_NO_BUILD_ISOLATION=1 pip install -r requirements/CityGS.txt \
   && pip install awscli
 
 COPY . /workspace
