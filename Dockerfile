@@ -26,9 +26,8 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1 \
 
 WORKDIR /workspace
 
-COPY requirements/pyt201_cu118.txt requirements/pyt201_cu118.txt
+COPY requirements/ requirements/
 COPY requirements.txt requirements.txt
-COPY requirements/CityGS.txt requirements/CityGS.txt
 
 RUN pip install -r requirements/pyt201_cu118.txt \
   && pip install -r requirements.txt \
