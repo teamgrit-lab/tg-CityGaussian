@@ -33,6 +33,7 @@ COPY requirements.txt requirements.txt
 
 RUN pip install -r requirements/pyt201_cu118.txt \
   && pip install --no-build-isolation -r requirements.txt \
+  && pip install --no-build-isolation -r requirements/2DGS.txt \
   && pip install --no-build-isolation -r requirements/CityGS.txt \
   && pip install awscli
 
