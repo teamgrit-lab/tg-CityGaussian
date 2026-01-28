@@ -9,7 +9,8 @@ model:
 
 data:
   path: data/com3_full
-  parser: Colmap
+  parser:
+    class_path: Colmap
   val_max_num_images_to_cache: -1 # 모든 validation 이미지 메모리 캐싱
   test_max_num_images_to_cache: -1
   train_max_num_images_to_cache: -1 # 모든 training 이미지 메모리 캐싱 (고성능 AWS)
