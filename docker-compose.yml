@@ -30,6 +30,7 @@ services:
     tty: true
 
   colmap:
+    profiles: ["colmap"]
     build:
       context: .
       dockerfile: docker/colmap/Dockerfile
@@ -56,6 +57,7 @@ services:
     tty: true
 
   colmap_cpu:
+    profiles: ["colmap"]
     build:
       context: .
       dockerfile: docker/colmap/Dockerfile
