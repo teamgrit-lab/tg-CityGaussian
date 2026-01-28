@@ -11,6 +11,7 @@ services:
       - ./data:/workspace/data
       - ./outputs:/workspace/outputs
       - ./cache:/workspace/.cache
+      - ./configs:/workspace/configs
     env_file:
       - docker.env
     environment:
@@ -40,6 +41,7 @@ services:
       - ./data:/workspace/data
       - ./outputs:/workspace/outputs
       - ./cache:/workspace/.cache
+      - ./configs:/workspace/configs
     env_file:
       - docker.env
     environment:
@@ -67,6 +69,7 @@ services:
       - ./data:/workspace/data
       - ./outputs:/workspace/outputs
       - ./cache:/workspace/.cache
+      - ./configs:/workspace/configs
     env_file:
       - docker.env
     environment:
