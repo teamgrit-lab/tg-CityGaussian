@@ -115,6 +115,40 @@ python utils/image_downsample.py data/your_scene/images --factor $DOWNSAMPLE_RAT
 ```
 The $DOWNSAMPLE_RATIO is 3.4175 for GauU-Scene, 1.2 for aerial view of MatrixCity, 1.0 for street view of MatrixCity (no downsample), and 4.0 for Mill19 and UrbanScene3D.
 
+### [Optional] Promptable SAM3 masks (exclude objects from training)
+If you want to exclude objects (e.g., people) from training loss, generate per-image mask PNGs
+and configure `mask_dir` for the Colmap dataparser. Masked pixels must be **0**, and unmasked
+pixels must be **255**.
+
+Generate masks with SAM3 (promptable, multi-class):
+```bash
+python utils/get_sam3_prompt_masks.py data/your_scene/images \
+  --output data/your_scene \
+  --sam3-ckpt /path/to/sam3.ckpt \
+  --sam3-module sam3 \
+  --prompt person car \
+  --mask-dir semantic/masks_png \
+  --text-threshold 0.25 \
+  --preview
+```
+
+This writes masks to:
+```
+data/your_scene/semantic/masks_png/<relative_image_path>.png
+```
+
+Then enable masks in your config:
+```yaml
+data:
+  parser:
+    class_path: Colmap
+    init_args:
+      mask_dir: semantic/masks_png
+```
+
+`mask_dir` can be absolute or relative to the dataset path (for Colmap/ColmapBlock).
+Prompt mode requires `open_clip_torch` and a SAM3 implementation available in `--sam3-module`.
+
 Secondly, prepare [Depth Anything V2](https://depth-anything-v2.github.io/) for depth regularization:
 ```bash
 # clone the repo.

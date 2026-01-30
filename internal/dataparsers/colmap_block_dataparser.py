@@ -160,6 +160,12 @@ class ColmapBlockDataParser(ColmapDataParser):
         image_path_list = []
         mask_path_list = []
 
+        mask_dir = None
+        if self.params.mask_dir is not None:
+            mask_dir = self.params.mask_dir
+            if not os.path.isabs(mask_dir):
+                mask_dir = os.path.join(self.path, mask_dir)
+
         # parse colmap sparse model
         for idx, key in enumerate(images):
             # extract image and its correspond camera
@@ -192,8 +198,8 @@ class ColmapBlockDataParser(ColmapDataParser):
 
             # whether mask exists
             mask_path = None
-            if self.params.mask_dir is not None:
-                mask_path = os.path.join(self.params.mask_dir, "{}.png".format(extrinsics.name))
+            if mask_dir is not None:
+                mask_path = os.path.join(mask_dir, "{}.png".format(extrinsics.name))
                 if os.path.exists(mask_path) is True:
                     loaded_mask_count += 1
                 else:
@@ -216,10 +222,10 @@ class ColmapBlockDataParser(ColmapDataParser):
             mask_path_list.append(mask_path)
 
         # loaded mask must not be zero if self.params.mask_dir provided
-        if self.params.mask_dir is not None and loaded_mask_count == 0:
+        if mask_dir is not None and loaded_mask_count == 0:
             raise RuntimeError("not a mask was loaded from {}, "
                                "please remove the mask_dir parameter if this is a expected result".format(
-                self.params.mask_dir
+                mask_dir
             ))
 
         # calculate norm
