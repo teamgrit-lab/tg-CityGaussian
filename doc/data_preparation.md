@@ -149,6 +149,23 @@ data:
 `mask_dir` can be absolute or relative to the dataset path (for Colmap/ColmapBlock).
 Prompt mode requires `open_clip_torch` and a SAM3 implementation available in `--sam3-module`.
 
+#### Docker (SAM3 masks)
+There is a dedicated Docker service similar to `colmap`. Build it with a SAM3 package:
+```bash
+docker compose --profile sam3 build \
+  --build-arg SAM3_PIP="git+https://your-sam3-repo.git"
+```
+
+Run a shell in the container and execute the masking script:
+```bash
+docker compose --profile sam3 run --rm sam3 bash
+python utils/get_sam3_prompt_masks.py data/your_scene/images \
+  --output data/your_scene \
+  --sam3-ckpt /path/to/sam3.ckpt \
+  --sam3-module sam3 \
+  --prompt person car
+```
+
 Secondly, prepare [Depth Anything V2](https://depth-anything-v2.github.io/) for depth regularization:
 ```bash
 # clone the repo.

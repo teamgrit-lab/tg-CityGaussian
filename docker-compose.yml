@@ -76,3 +76,31 @@ services:
       AWS_REGION: ap-northeast-2
     stdin_open: true
     tty: true
+
+  sam3:
+    profiles: ["sam3"]
+    build:
+      context: .
+      dockerfile: docker/sam3/Dockerfile
+    image: citygaussian:sam3-cuda118
+    shm_size: "8gb"
+    volumes:
+      - ./data:/workspace/data
+      - ./outputs:/workspace/outputs
+      - ./cache:/workspace/.cache
+      - ./configs:/workspace/configs
+    env_file:
+      - docker.env
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+      AWS_REGION: ap-northeast-2
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    stdin_open: true
+    tty: true
